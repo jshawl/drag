@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <title>Dabble!</title>
+    <style>
+      body{
+        background:red;
+      }
+      svg{
+	position:absolute;
+	background: #fff;
+	top:0;
+	left:0;
+	height:100%;
+	width:100%;
+	cursor:pointer;
+      }
+      .line{
+        display:inline-block;
+	position:fixed;
+	top:1em;
+	left:1em;
+	z-index:9;
+	background: #ccc;
+	width:1em;
+	height:1em;
+	text-align:center;
+	font-weight:bold;
+	cursor:pointer;
+	font-size:1.5em;
+      }
+      .active{
+        background: #aaa;
+      }
+    
+    </style> 
+  </head>
+  <body>
+    <div class='js-line line'> / </div>
+    <svg height="300" width="500">
+      <defs>
+      <g id='svg'></g>
+      </defs>
+      <use xlink:href="#svg" x="0" y="0"/>
+    </svg>
+    <script>
+      var line = document.querySelector(".js-line")
+      var flag = 0
+      var bodyFlag = 0
+      var startX = 0
+      var startY = 0
+      var svg = document.querySelector("svg") 
+      var g = document.querySelector("g")
+      var use = document.querySelector("use")
+      document.body.addEventListener("mousedown", function(event){
+	bodyFlag = bodyFlag ? 0 : 1
+      })
+      document.body.addEventListener("mousemove", function(event){
+	if(bodyFlag){
+	  startX += event.movementY
+	  startY += event.movementX
+	  use.setAttribute("y",startX + "")
+	  use.setAttribute("x", startY + "")
+	}
+      })
+      document.body.addEventListener("mouseup", function(event){
+	bodyFlag = bodyFlag ? 0 : 1
+      })
+      line.addEventListener("click", function(event){
+	event.preventDefault()
+        this.classList.toggle("active") 
+	flag = flag ? 0 : 1
+      })
+      svg.addEventListener("mousedown", function(event){
+	if(line.classList.contains("active")){
+	  var el = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+	  var x = parseInt(use.getAttribute("x"))
+	  var y = parseInt(use.getAttribute("y"))
+	  el.setAttribute("stroke","#000")
+	  el.setAttribute("stroke-width","3px")
+	  el.setAttribute("x1",event.clientX - x)
+	  el.setAttribute("y1",event.clientY - y)
+	  el.setAttribute("x2",event.clientX - x)
+	  el.setAttribute("y2",event.clientY - y)
+	  var g = document.querySelector("g")
+	  g.appendChild(el)
+	  flag = 1
+	}
+      })
+      document.body.addEventListener("keyup", function(event){
+	if(event.keyCode == 27){
+	  document.querySelector(".active").classList.remove("active")
+	  flag = 0
+	}
+      })
+      svg.addEventListener("mousemove",function(event){
+	if(flag && line.classList.contains("active")){
+	  event.stopPropagation()
+	  var lines = document.querySelectorAll("line")
+	  if(lines.length){
+	    var el = lines[lines.length - 1]
+	    var x = parseInt(use.getAttribute("x"))
+	    var y = parseInt(use.getAttribute("y"))
+	    el.setAttribute("x2",event.clientX - x)
+	    el.setAttribute("y2",event.clientY - y)
+	  }
+	}
+      })
+      svg.addEventListener("mouseup", function(event){
+	if(line.classList.contains("active")){
+	  var lines = document.querySelectorAll("line")
+	  var el = lines[lines.length - 1]
+	  var x = parseInt(use.getAttribute("x"))
+	  var y = parseInt(use.getAttribute("y"))
+	  el.setAttribute("x2",event.clientX - x)
+	  el.setAttribute("y2",event.clientY - y)
+	  flag = 0
+	}
+      })
+    </script>
+  </body>
+</html>
