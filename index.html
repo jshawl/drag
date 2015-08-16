@@ -39,9 +39,9 @@
     <div class='js-line line'> / </div>
     <svg height="300" width="500">
       <defs>
-      <g id='svg'></g>
+	<g id="svg"><line stroke="#000" stroke-width="3px" x1="-104" y1="5" x2="-7" y2="-42"></line><line stroke="#000" stroke-width="3px" x1="-29" y1="-32" x2="142" y2="150"></line></g>
       </defs>
-      <use xlink:href="#svg" x="0" y="0"/>
+      <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg" x="159" y="134"></use>
     </svg>
     <script>
       var line = document.querySelector(".js-line")
@@ -87,12 +87,6 @@
 	  flag = 1
 	}
       })
-      document.body.addEventListener("keyup", function(event){
-	if(event.keyCode == 27){
-	  document.querySelector(".active").classList.remove("active")
-	  flag = 0
-	}
-      })
       svg.addEventListener("mousemove",function(event){
 	if(flag && line.classList.contains("active")){
 	  event.stopPropagation()
@@ -116,6 +110,18 @@
 	  el.setAttribute("y2",event.clientY - y)
 	  flag = 0
 	}
+      })
+    </script>
+    <script src='lib/drag.js'></script>
+    <script>
+      drag.on("start", function(event){
+	console.log("started")
+      })
+      drag.on("move", function(event){
+	console.log("movin")
+      })
+      drag.on("end", function(event){
+	console.log("ended")
       })
     </script>
   </body>
