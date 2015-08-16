@@ -42,16 +42,18 @@
     <div class='modes'>
       <div drag-mode="body" class='fa fa-arrows-alt'> </div> 
       <div drag-mode="line"> / </div> 
+      <div drag-mode="path" class='fa fa-pencil'></div> 
     </div>
     <svg height="300" width="500">
       <defs>
-	<g id="svg"><line stroke="#000" stroke-width="3px" x1="-104" y1="5" x2="-7" y2="-42"></line><line stroke="#000" stroke-width="3px" x1="-29" y1="-32" x2="142" y2="150"></line></g>
+	<g id="svg">
+	  <line stroke="#000" stroke-width="3px" x1="-104" y1="5" x2="-7" y2="-42"></line>
+	  <line stroke="#000" stroke-width="3px" x1="-29" y1="-32" x2="142" y2="150"></line>
+	</g>
       </defs>
       <use xmlns:xlink="http://www.w3.org/1999/xlink" xlink:href="#svg" x="159" y="134"></use>
     </svg>
     <script>
-      var flag = 0
-      var bodyFlag = 0
       var svg = document.querySelector("svg") 
       var g = document.querySelector("g")
       var use = document.querySelector("use")
@@ -61,17 +63,25 @@
     <script src='lib/drag.js'></script>
     <script>
       drag.on("start", function(event){
+	var x = parseInt(use.getAttribute("x"))
+	var y = parseInt(use.getAttribute("y"))
 	if(drag.mode == "line"){
 	  var el = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-	  var x = parseInt(use.getAttribute("x"))
-	  var y = parseInt(use.getAttribute("y"))
 	  el.setAttribute("stroke","#000")
 	  el.setAttribute("stroke-width","3px")
 	  el.setAttribute("x1",event.clientX - x)
 	  el.setAttribute("y1",event.clientY - y)
 	  el.setAttribute("x2",event.clientX - x)
 	  el.setAttribute("y2",event.clientY - y)
-	  var g = document.querySelector("g")
+	  g.appendChild(el)
+	}
+	if(drag.mode == "path"){
+	  var el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
+	  var data = el.getAttribute("points") || (event.clientX - x ) + "," + (event.clientY - y)
+	  el.setAttribute("stroke","blue")
+	  el.setAttribute("fill","none")
+	  el.setAttribute("stroke-width","3px")
+	  el.setAttribute("points", data)
 	  g.appendChild(el)
 	}
       })
@@ -86,6 +96,8 @@
 	}
       })
       drag.on("move", function(event){
+	var x = parseInt(use.getAttribute("x"))
+	var y = parseInt(use.getAttribute("y"))
 	if(drag.mode == "body"){
 	  startX += event.movementY
 	  startY += event.movementX
@@ -100,6 +112,16 @@
 	    var y = parseInt(use.getAttribute("y"))
 	    el.setAttribute("x2",event.clientX - x)
 	    el.setAttribute("y2",event.clientY - y)
+	  }
+	}else if(drag.mode=="path"){
+	  event.stopPropagation()
+	  var paths = document.querySelectorAll("polyline")
+	  if(paths.length){
+	    var el = paths[paths.length - 1]
+	    var data = el.getAttribute("points") 
+	    var attr = data + " " + (event.clientX - x) + "," + (event.clientY - y)
+	    console.log("attr", attr)
+	    el.setAttribute("points", attr)
 	  }
 	}
       })
