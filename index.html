@@ -58,68 +58,96 @@
     </script>
     <script src='lib/drag.js'></script>
     <script>
-      drag.on("start", function(event){
-	var x = parseInt(use.getAttribute("x"))
-	var y = parseInt(use.getAttribute("y"))
-	if(drag.mode == "line"){
-	  var el = document.createElementNS('http://www.w3.org/2000/svg', 'line')
-	  el.setAttribute("stroke","#000")
-	  el.setAttribute("stroke-width","3px")
-	  el.setAttribute("x1",event.clientX - x)
-	  el.setAttribute("y1",event.clientY - y)
-	  el.setAttribute("x2",event.clientX - x)
-	  el.setAttribute("y2",event.clientY - y)
-	  g.appendChild(el)
-	}
-	if(drag.mode == "path"){
-	  var el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
-	  var data = el.getAttribute("points") || (event.clientX - x ) + "," + (event.clientY - y)
-	  el.setAttribute("stroke","blue")
-	  el.setAttribute("fill","none")
-	  el.setAttribute("stroke-width","3px")
-	  el.setAttribute("points", data)
-	  g.appendChild(el)
-	}
-      })
-      drag.on("end", function(event){
-	if(drag.mode=="line"){
-	  var lines = document.querySelectorAll("line")
-	  var el = lines[lines.length - 1]
-	  var x = parseInt(use.getAttribute("x"))
-	  var y = parseInt(use.getAttribute("y"))
-	  el.setAttribute("x2",event.clientX - x)
-	  el.setAttribute("y2",event.clientY - y)
-	}
-      })
-      drag.on("move", function(event){
-	var x = parseInt(use.getAttribute("x"))
-	var y = parseInt(use.getAttribute("y"))
-	if(drag.mode == "body"){
-	  startX += event.movementY
-	  startY += event.movementX
-	  use.setAttribute("y",startX + "")
-	  use.setAttribute("x", startY + "")
-	}else if(drag.mode=="line"){
-	  event.stopPropagation()
-	  var lines = document.querySelectorAll("line")
-	  if(lines.length){
+      var modes = {
+        line: {
+	  start: function(event){
+	    var x = parseInt(use.getAttribute("x"))
+	    var y = parseInt(use.getAttribute("y"))
+	    var el = document.createElementNS('http://www.w3.org/2000/svg', 'line')
+	    el.setAttribute("stroke","#000")
+	    el.setAttribute("stroke-width","3px")
+	    el.setAttribute("x1",event.clientX - x)
+	    el.setAttribute("y1",event.clientY - y)
+	    el.setAttribute("x2",event.clientX - x)
+	    el.setAttribute("y2",event.clientY - y)
+	    g.appendChild(el)
+	  },
+	  move: function(event){
+	    event.stopPropagation()
+	    var lines = document.querySelectorAll("line")
+	    if(lines.length){
+	      var el = lines[lines.length - 1]
+	      var x = parseInt(use.getAttribute("x"))
+	      var y = parseInt(use.getAttribute("y"))
+	      el.setAttribute("x2",event.clientX - x)
+	      el.setAttribute("y2",event.clientY - y)
+	    }
+	  },
+	  end: function(event){
+	    var lines = document.querySelectorAll("line")
 	    var el = lines[lines.length - 1]
 	    var x = parseInt(use.getAttribute("x"))
 	    var y = parseInt(use.getAttribute("y"))
 	    el.setAttribute("x2",event.clientX - x)
 	    el.setAttribute("y2",event.clientY - y)
 	  }
-	}else if(drag.mode=="path"){
-	  event.stopPropagation()
-	  var paths = document.querySelectorAll("polyline")
-	  if(paths.length){
-	    var el = paths[paths.length - 1]
-	    var data = el.getAttribute("points") 
-	    var attr = data + " " + (event.clientX - x) + "," + (event.clientY - y)
-	    console.log("attr", attr)
-	    el.setAttribute("points", attr)
+	},
+	path: {
+	  start: function(event){
+	    var x = parseInt(use.getAttribute("x"))
+	    var y = parseInt(use.getAttribute("y"))
+	    var el = document.createElementNS('http://www.w3.org/2000/svg', 'polyline')
+	    var data = el.getAttribute("points") || (event.clientX - x ) + "," + (event.clientY - y)
+	    el.setAttribute("stroke","blue")
+	    el.setAttribute("fill","none")
+	    el.setAttribute("stroke-width","3px")
+	    el.setAttribute("points", data)
+	    g.appendChild(el)
+	  },
+	  move: function(event){
+	    event.stopPropagation()
+	    var x = parseInt(use.getAttribute("x"))
+	    var y = parseInt(use.getAttribute("y"))
+	    var paths = document.querySelectorAll("polyline")
+	    if(paths.length){
+	      var el = paths[paths.length - 1]
+	      var data = el.getAttribute("points") 
+	      var attr = data + " " + (event.clientX - x) + "," + (event.clientY - y)
+	      el.setAttribute("points", attr)
+	    }
+	  },
+	  end: function(event){
+	    event.stopPropagation()
+	    var x = parseInt(use.getAttribute("x"))
+	    var y = parseInt(use.getAttribute("y"))
+	    var paths = document.querySelectorAll("polyline")
+	    if(paths.length){
+	      var el = paths[paths.length - 1]
+	      var data = el.getAttribute("points") 
+	      var attr = data + " " + (event.clientX - x) + "," + (event.clientY - y)
+	      el.setAttribute("points", attr)
+	    }
 	  }
+	},
+	body: { 
+	  start: function(){},
+	  move: function(event){
+	    startX += event.movementY
+	    startY += event.movementX
+	    use.setAttribute("y",startX + "")
+	    use.setAttribute("x", startY + "")
+	  },
+	  end: function(){}
 	}
+      }
+      drag.on("start", function(event){
+	modes[drag.mode].start(event)
+      })
+      drag.on("end", function(event){
+	modes[drag.mode].end(event)
+      })
+      drag.on("move", function(event){
+	modes[drag.mode].move(event)
       })
     </script>
   </body>
